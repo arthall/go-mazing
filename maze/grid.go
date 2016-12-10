@@ -56,7 +56,7 @@ func (g *Grid2d) randomCell() *Cell {
 	return &g.grid[x][y]
 }
 
-func (g *Grid2d) getCell(x int, y int) *Cell {
+func (g *Grid2d) GetCell(x int, y int) *Cell {
 	if x < 0 || x > g.rows - 1 {
 		return nil
 	}
@@ -67,13 +67,13 @@ func (g *Grid2d) getCell(x int, y int) *Cell {
 }
 
 func (g *Grid2d) exists(pos coordinate) bool {
-	if g.getCell(pos.x, pos.y) ==  nil {
+	if g.GetCell(pos.x, pos.y) ==  nil {
 		return false
 	}
 	return true
 }
 
-func (g *Grid2d) display() {
+func (g *Grid2d) displayAscii() {
 	fmt.Println("+" + strings.Repeat("---+", g.cols))
 
 	empty := "   "
@@ -113,13 +113,13 @@ func (g *Grid2d) calculateIntersection(c Cell) int {
 		result += 2
 	}
 	if g.exists(c.east) {
-		east := g.getCell(c.east.x, c.east.y)
+		east := g.GetCell(c.east.x, c.east.y)
 		if !east.isLinked(east.south) {
 			result += 4
 		}
 	}
 	if g.exists(c.south) {
-		south := g.getCell(c.south.x, c.south.y)
+		south := g.GetCell(c.south.x, c.south.y)
 		if !south.isLinked(south.east) {
 			result += 8
 		}
@@ -127,7 +127,7 @@ func (g *Grid2d) calculateIntersection(c Cell) int {
 	return result
 }
 
-func (g *Grid2d) Display2() {
+func (g *Grid2d) DisplayUnicode() {
 	intersections := []rune(" ╵╴┘╶└─┴╷│┐┤┌├┬┼")
 	vWall := intersections[9]
 	hWall := strings.Repeat(string(intersections[6]), 3)
@@ -138,7 +138,7 @@ func (g *Grid2d) Display2() {
 	top = append(top, intersections[12])
 	for _, cell := range(g.grid[0]) {
 		top = append(top, []rune(hWall)...)
-		if g.getCell(cell.east.x, cell.east.y) != nil {
+		if g.GetCell(cell.east.x, cell.east.y) != nil {
 			if cell.isLinked(cell.east) {
 				top = append(top, intersections[6])
 			} else {
@@ -158,16 +158,22 @@ func (g *Grid2d) Display2() {
 		if r == g.rows - 1 {
 			bottom = append(bottom, intersections[5])
 		} else {
-			if g.getCell(r, 0).isLinked(g.getCell(r, 0).south){
+			if g.GetCell(r, 0).isLinked(g.GetCell(r, 0).south){
 				bottom = append(bottom, vWall)
 			} else {
 				bottom = append(bottom, intersections[13])
 			}
-
 		}
+
 		for _, cell := range(row) {
 			// Middle of the row
-			middle = append(middle, []rune(empty)...)
+			middle = append(middle, intersections[0])
+			if cell.contents != 0 {
+				middle = append(middle, cell.contents)
+			} else {
+				middle = append(middle, intersections[0])
+			}
+			middle = append(middle, intersections[0])
 			if cell.isLinked(cell.east) {
 				middle =append(middle, ' ')
 			} else {
@@ -184,5 +190,11 @@ func (g *Grid2d) Display2() {
 		}
 		fmt.Println(string(middle))
 		fmt.Println(string(bottom))
+	}
+}
+
+func (g * Grid2d) AddDistances(dis map[coordinate]int) {
+	for pos, val := range dis {
+		g.GetCell(pos.x, pos.y).contents = numbers[val]
 	}
 }

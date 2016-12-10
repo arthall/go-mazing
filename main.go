@@ -5,6 +5,9 @@ import (
 )
 
 func main() {
-	g := maze.Sidewinder(20, 20)
-	g.Display2()
+	g := maze.Sidewinder(10, 10)
+	root := g.GetCell(0, 0)
+	dis := g.Distance(root)
+	g.AddDistances(dis)
+	g.DisplayUnicode()
 }

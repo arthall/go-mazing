@@ -11,13 +11,13 @@ func binary() {
 	g.initialize(9, 9)
 	for i, row := range(g.grid) {
 		for j, _ := range(row) {
-			cell := g.getCell(i, j)
+			cell := g.GetCell(i, j)
 			neighbors := make([]*Cell, 0)
-			north := g.getCell(cell.north.x, cell.north.y)
+			north := g.GetCell(cell.north.x, cell.north.y)
 			if north != nil {
 				neighbors = append(neighbors, north)
 			}
-			east := g.getCell(cell.east.x, cell.east.y)
+			east := g.GetCell(cell.east.x, cell.east.y)
 			if east != nil {
 				neighbors = append(neighbors, east)
 			}
@@ -27,5 +27,5 @@ func binary() {
 			}
 		}
 	}
-	g.display()
+	g.displayAscii()
 }

@@ -1,8 +1,12 @@
 package maze
 
+
 type coordinate struct {
 	x, y int
 }
+
+// var numbers = []rune("⓪①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚㉛㉜㉝㉞㉟㊱㊲㊳㊴")
+var numbers = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 type Cell struct {
 	position coordinate
@@ -10,6 +14,7 @@ type Cell struct {
 	south    coordinate
 	east     coordinate
 	west     coordinate
+	contents rune
 	links    []coordinate
 }
 

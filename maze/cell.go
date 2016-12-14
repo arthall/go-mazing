@@ -14,7 +14,7 @@ type Cell struct {
 	south    coordinate
 	east     coordinate
 	west     coordinate
-	contents rune
+	contents int
 	links    []coordinate
 }
 

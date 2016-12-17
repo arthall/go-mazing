@@ -5,14 +5,11 @@ import (
 	"strings"
 	"math/rand"
 	"image"
-	//"image/color"
 	"image/png"
 	"image/draw"
-	//"bytes"
-	//"encoding/base64"
 	"os"
 	"image/color"
-	"github.com/arthall/go-mazing/colors"
+	"github.com/dustin/go-heatmap/schemes"
 )
 
 type Maze interface{
@@ -242,7 +239,7 @@ func(g *Grid2d) DisplayImage() {
 		for y, cell := range(row) {
 			tile := g.calculateTile(cell)
 			point := image.Point{tile * 30, 0}
-			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), &image.Uniform{colors.AlphaFire[cell.contents]}, image.ZP, draw.Src)
+			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), &image.Uniform{schemes.Classic[cell.contents]}, image.ZP, draw.Src)
 			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), tiles, point, draw.Over)
 		}
 	}

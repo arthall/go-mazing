@@ -1,0 +1,8 @@
+#*
+*.db
+*~
+.#*
+/examples/wikipedia/wikipedia
+/schemecompiler/schemecompiler
+_*
+c.out

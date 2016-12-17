@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"strings"
 	"math/rand"
+	"image"
+	"image/png"
+	"image/draw"
+	"os"
+	"image/color"
+	"github.com/dustin/go-heatmap/schemes"
 )
 
 type Maze interface{
@@ -127,6 +133,26 @@ func (g *Grid2d) calculateIntersection(c Cell) int {
 	return result
 }
 
+
+func (g *Grid2d) calculateTile(c Cell) int {
+	result := 0
+
+	if c.isLinked(c.north) {
+		result += 1
+	}
+	if c.isLinked(c.east) {
+		result += 2
+	}
+	if c.isLinked(c.south) {
+		result += 4
+	}
+	if c.isLinked(c.west) {
+		result += 8
+	}
+
+	return result
+}
+
 func (g *Grid2d) DisplayUnicode() {
 	intersections := []rune(" ╵╴┘╶└─┴╷│┐┤┌├┬┼")
 	vWall := intersections[9]
@@ -169,7 +195,7 @@ func (g *Grid2d) DisplayUnicode() {
 			// Middle of the row
 			middle = append(middle, intersections[0])
 			if cell.contents != 0 {
-				middle = append(middle, cell.contents)
+				middle = append(middle, numbers[cell.contents])
 			} else {
 				middle = append(middle, intersections[0])
 			}
@@ -193,8 +219,48 @@ func (g *Grid2d) DisplayUnicode() {
 	}
 }
 
-func (g * Grid2d) AddDistances(dis map[coordinate]int) {
+func(g *Grid2d) DisplayImage() {
+	cellSize := 30
+	myimage := image.NewRGBA(image.Rectangle{image.Point{0,0},image.Point{g.rows * cellSize, g.cols * cellSize}})
+	white := color.RGBA{255, 255, 255, 255}
+	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{white}, image.ZP, draw.Src)
+	file, err := os.Open("mazetiles.png")
+	if err != nil {
+		fmt.Println("Could open tiles.")
+	}
+	tiles, err := png.Decode(file)
+	if err != nil {
+		fmt.Println("Could decode tiles.")
+	}
+	defer file.Close()
+
+	// This loop just fills the image with random data
+	for x, row := range(g.grid) {
+		for y, cell := range(row) {
+			tile := g.calculateTile(cell)
+			point := image.Point{tile * 30, 0}
+			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), &image.Uniform{schemes.Classic[cell.contents]}, image.ZP, draw.Src)
+			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), tiles, point, draw.Over)
+		}
+	}
+
+	myfile, _ := os.Create("test.png")
+	defer myfile.Close()
+	png.Encode(myfile, myimage)
+}
+
+//func ShowImage(m image.Image) {
+//	var buf bytes.Buffer
+//	err := png.Encode(&buf, m)
+//	if err != nil {
+//		panic(err)
+//	}
+//	enc := base64.StdEncoding.EncodeToString(buf.Bytes())
+//	fmt.Println("IMAGE:" + enc)
+//}
+
+func (g *Grid2d) AddDistances(dis map[coordinate]int) {
 	for pos, val := range dis {
-		g.GetCell(pos.x, pos.y).contents = numbers[val]
+		g.GetCell(pos.x, pos.y).contents = val
 	}
 }

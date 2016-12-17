@@ -7,3 +7,7 @@ The inspiration for this project is "Mazes for Programmers, Code Your Own Twisty
 Buck and published by The Pragmatic Bookshelf.  I highly recommend that you check out the book.  Jamis does a
 wonderful job describing the algorithms used for building and solving mazes.
 [Mazes for Programmers, Code Your Own Twisty Little Passages](https://pragprog.com/book/jbmaze/mazes-for-programmers)
+
+Heatmap schemas are from https://github.com/dustin/go-heatmap
+
+![Sidewinder with heatmap](./sidewinder_heatmap.png)

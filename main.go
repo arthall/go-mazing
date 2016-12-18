@@ -10,5 +10,5 @@ func main() {
 	dis := g.Distance(root)
 	g.AddDistances(dis)
 	//g.DisplayUnicode()
-	g.DisplayImage()
+	g.DisplayImage(false)
 }

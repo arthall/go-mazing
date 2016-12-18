@@ -219,7 +219,7 @@ func (g *Grid2d) DisplayUnicode() {
 	}
 }
 
-func(g *Grid2d) DisplayImage() {
+func(g *Grid2d) DisplayImage(withHeatmap bool) {
 	cellSize := 30
 	myimage := image.NewRGBA(image.Rectangle{image.Point{0,0},image.Point{g.rows * cellSize, g.cols * cellSize}})
 	white := color.RGBA{255, 255, 255, 255}
@@ -237,10 +237,13 @@ func(g *Grid2d) DisplayImage() {
 	// This loop just fills the image with random data
 	for x, row := range(g.grid) {
 		for y, cell := range(row) {
-			tile := g.calculateTile(cell)
-			point := image.Point{tile * 30, 0}
-			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), &image.Uniform{schemes.Classic[cell.contents]}, image.ZP, draw.Src)
-			draw.Draw(myimage, image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize), tiles, point, draw.Over)
+			rect := image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize)
+			if withHeatmap {
+				draw.Draw(myimage, rect, &image.Uniform{schemes.Classic[cell.contents]}, image.ZP, draw.Src)
+			}
+			tileNumber := g.calculateTile(cell)
+			point := image.Point{tileNumber * 30, 0}
+			draw.Draw(myimage, rect, tiles, point, draw.Over)
 		}
 	}
 

@@ -5,10 +5,10 @@ import (
 )
 
 func main() {
-	g := maze.Sidewinder(40, 40)
+	g := maze.RandomWalk(40, 40)
 	root := g.GetCell(0, 0)
 	dis := g.Distance(root)
 	g.AddDistances(dis)
 	//g.DisplayUnicode()
-	g.DisplayImage(false)
+	g.DisplayImage(true)
 }

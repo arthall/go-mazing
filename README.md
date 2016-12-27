@@ -10,4 +10,9 @@ wonderful job describing the algorithms used for building and solving mazes.
 
 Heatmap schemas are from https://github.com/dustin/go-heatmap
 
+Sample maze generated with Sidewinder algorithm
 ![Sidewinder with heatmap](./sidewinder_heatmap.png)
+
+Sample maze generated with Random Walk algorithm
+![Random Walk with heatmap](./random_walk_heatmap.png)
+

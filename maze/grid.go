@@ -219,27 +219,66 @@ func (g *Grid2d) DisplayUnicode() {
 	}
 }
 
-func(g *Grid2d) DisplayImage(withHeatmap bool) {
+func(g *Grid2d) DisplayImage(withHeatmap bool, withPath bool) {
 	cellSize := 30
 	myimage := image.NewRGBA(image.Rectangle{image.Point{0,0},image.Point{g.rows * cellSize, g.cols * cellSize}})
 	white := color.RGBA{255, 255, 255, 255}
 	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{white}, image.ZP, draw.Src)
 	file, err := os.Open("mazetiles.png")
 	if err != nil {
-		fmt.Println("Could open tiles.")
+		fmt.Println("Could not open tiles.")
 	}
 	tiles, err := png.Decode(file)
 	if err != nil {
-		fmt.Println("Could decode tiles.")
+		fmt.Println("Could not decode tiles.")
 	}
 	defer file.Close()
 
-	// This loop just fills the image with random data
+	var line image.Image
+	if withPath {
+		red, err := os.Open("redline.png")
+		if err != nil {
+			fmt.Println("Could not open redline.")
+		}
+		line, err = png.Decode(red)
+		if err != nil {
+			fmt.Println("Could not decode redline.")
+		}
+		defer red.Close()
+	}
+
 	for x, row := range(g.grid) {
 		for y, cell := range(row) {
 			rect := image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize)
 			if withHeatmap {
-				draw.Draw(myimage, rect, &image.Uniform{schemes.Classic[cell.contents]}, image.ZP, draw.Src)
+				distance := cell.contents
+				if distance > len(schemes.AlphaFire) {
+					distance = len(schemes.AlphaFire) - 2
+				}
+				draw.Draw(myimage, rect, &image.Uniform{schemes.AlphaFire[distance]}, image.ZP, draw.Src)
+			}
+			if withPath && cell.contents > 0 {
+				for _, link := range cell.links {
+					if g.GetCell(link.x, link.y).contents == 0 {
+						continue
+					}
+					var x int
+					if link.x == cell.north.x && link.y == cell.north.y {
+						x = 0
+					}
+					if link.x == cell.east.x && link.y == cell.east.y {
+						x = 1 * cellSize
+					}
+					if link.x == cell.south.x && link.y == cell.south.y {
+						x = 2 * cellSize
+					}
+					if link.x == cell.west.x && link.y == cell.west.y {
+						x = 3 * cellSize
+					}
+					point := image.Point{x, 0}
+					draw.Draw(myimage, rect, line, point, draw.Over)
+
+				}
 			}
 			tileNumber := g.calculateTile(cell)
 			point := image.Point{tileNumber * 30, 0}
@@ -265,5 +304,14 @@ func(g *Grid2d) DisplayImage(withHeatmap bool) {
 func (g *Grid2d) AddDistances(dis map[coordinate]int) {
 	for pos, val := range dis {
 		g.GetCell(pos.x, pos.y).contents = val
+	}
+}
+
+func (g *Grid2d) ClearDistances() {
+	for _, row := range g.grid {
+		for _, cell := range row {
+			c := g.GetCell(cell.position.x, cell.position.y)
+			c.contents = 0
+		}
 	}
 }

@@ -1,6 +1,5 @@
 package maze
 
-
 type coordinate struct {
 	x, y int
 }
@@ -19,7 +18,7 @@ type Cell struct {
 }
 
 func (c Cell) isLinked(neighbor coordinate) bool {
-	for _, cell := range (c.links) {
+	for _, cell := range c.links {
 		if cell.x == neighbor.x && cell.y == neighbor.y {
 			return true
 		}
@@ -35,9 +34,9 @@ func (c *Cell) link(neighbor *Cell, bidirectional bool) {
 }
 
 func (c *Cell) unlink(neighbor *Cell, bidirection bool) {
-	for i, pos := range (c.links) {
+	for i, pos := range c.links {
 		if pos.x == neighbor.position.x && pos.y == neighbor.position.y {
-			c.links = append(c.links[:i], c.links[i + 1:]...)
+			c.links = append(c.links[:i], c.links[i+1:]...)
 		}
 	}
 

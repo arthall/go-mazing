@@ -2,17 +2,18 @@ package maze
 
 import (
 	"fmt"
-	"strings"
-	"math/rand"
 	"image"
-	"image/png"
-	"image/draw"
-	"os"
 	"image/color"
+	"image/draw"
+	"image/png"
+	"math/rand"
+	"os"
+	"strings"
+
 	"github.com/dustin/go-heatmap/schemes"
 )
 
-type Maze interface{
+type Maze interface {
 	initialize()
 	size()
 	randomCell()
@@ -20,7 +21,7 @@ type Maze interface{
 
 type Grid2d struct {
 	rows, cols int
-	grid [][]Cell
+	grid       [][]Cell
 }
 
 func (g *Grid2d) prepare() [][]Cell {
@@ -35,9 +36,9 @@ func (g *Grid2d) prepare() [][]Cell {
 }
 
 func (g *Grid2d) configure() {
-	for i, row := range(g.grid) {
-		for j := range(row) {
-			g.grid[i][j].north = coordinate{i -1, j}
+	for i, row := range g.grid {
+		for j := range row {
+			g.grid[i][j].north = coordinate{i - 1, j}
 			g.grid[i][j].east = coordinate{i, j + 1}
 			g.grid[i][j].south = coordinate{i + 1, j}
 			g.grid[i][j].west = coordinate{i, j - 1}
@@ -63,17 +64,17 @@ func (g *Grid2d) randomCell() *Cell {
 }
 
 func (g *Grid2d) GetCell(x int, y int) *Cell {
-	if x < 0 || x > g.rows - 1 {
+	if x < 0 || x > g.rows-1 {
 		return nil
 	}
-	if y < 0 || y > g.cols - 1 {
+	if y < 0 || y > g.cols-1 {
 		return nil
 	}
 	return &g.grid[x][y]
 }
 
 func (g *Grid2d) exists(pos coordinate) bool {
-	if g.GetCell(pos.x, pos.y) ==  nil {
+	if g.GetCell(pos.x, pos.y) == nil {
 		return false
 	}
 	return true
@@ -83,16 +84,16 @@ func (g *Grid2d) displayAscii() {
 	fmt.Println("+" + strings.Repeat("---+", g.cols))
 
 	empty := "   "
-	for _, row := range(g.grid) {
+	for _, row := range g.grid {
 		middle := make([]byte, 0)
 		bottom := make([]byte, 0)
 
 		middle = append(middle, '|')
 		bottom = append(bottom, '+')
-		for _, cell := range(row) {
+		for _, cell := range row {
 			middle = append(middle, []byte(empty)...)
 			if cell.isLinked(cell.east) {
-				middle =append(middle, ' ')
+				middle = append(middle, ' ')
 			} else {
 				middle = append(middle, '|')
 			}
@@ -108,7 +109,6 @@ func (g *Grid2d) displayAscii() {
 		fmt.Println(string(bottom))
 	}
 }
-
 
 func (g *Grid2d) calculateIntersection(c Cell) int {
 	result := 0
@@ -132,7 +132,6 @@ func (g *Grid2d) calculateIntersection(c Cell) int {
 	}
 	return result
 }
-
 
 func (g *Grid2d) calculateTile(c Cell) int {
 	result := 0
@@ -162,7 +161,7 @@ func (g *Grid2d) DisplayUnicode() {
 	// Top of maze
 	top := make([]rune, 0)
 	top = append(top, intersections[12])
-	for _, cell := range(g.grid[0]) {
+	for _, cell := range g.grid[0] {
 		top = append(top, []rune(hWall)...)
 		if g.GetCell(cell.east.x, cell.east.y) != nil {
 			if cell.isLinked(cell.east) {
@@ -176,22 +175,22 @@ func (g *Grid2d) DisplayUnicode() {
 	fmt.Println(string(top))
 
 	// Rest of maze
-	for r, row := range(g.grid) {
+	for r, row := range g.grid {
 		middle := make([]rune, 0)
 		bottom := make([]rune, 0)
 
 		middle = append(middle, vWall)
-		if r == g.rows - 1 {
+		if r == g.rows-1 {
 			bottom = append(bottom, intersections[5])
 		} else {
-			if g.GetCell(r, 0).isLinked(g.GetCell(r, 0).south){
+			if g.GetCell(r, 0).isLinked(g.GetCell(r, 0).south) {
 				bottom = append(bottom, vWall)
 			} else {
 				bottom = append(bottom, intersections[13])
 			}
 		}
 
-		for _, cell := range(row) {
+		for _, cell := range row {
 			// Middle of the row
 			middle = append(middle, intersections[0])
 			if cell.contents != 0 {
@@ -201,7 +200,7 @@ func (g *Grid2d) DisplayUnicode() {
 			}
 			middle = append(middle, intersections[0])
 			if cell.isLinked(cell.east) {
-				middle =append(middle, ' ')
+				middle = append(middle, ' ')
 			} else {
 				middle = append(middle, vWall)
 			}
@@ -219,70 +218,88 @@ func (g *Grid2d) DisplayUnicode() {
 	}
 }
 
-func(g *Grid2d) DisplayImage(withHeatmap bool, withPath bool) {
+func (g *Grid2d) DisplayImage(withHeatmap bool, withPath bool) {
+	if withHeatmap {
+		root := g.GetCell(0, 0)
+		dis := g.Distance(root)
+		g.AddDistances(dis)
+	}
+
 	cellSize := 30
-	myimage := image.NewRGBA(image.Rectangle{image.Point{0,0},image.Point{g.rows * cellSize, g.cols * cellSize}})
+	myimage := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{g.rows * cellSize, g.cols * cellSize}})
 	white := color.RGBA{255, 255, 255, 255}
 	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{white}, image.ZP, draw.Src)
-	file, err := os.Open("mazetiles.png")
+	file, err := os.Open("images/mazetiles.png")
 	if err != nil {
 		fmt.Println("Could not open tiles.")
 	}
+	defer file.Close()
 	tiles, err := png.Decode(file)
 	if err != nil {
 		fmt.Println("Could not decode tiles.")
 	}
-	defer file.Close()
 
-	var line image.Image
+	for x, row := range g.grid {
+		for y, cell := range row {
+			rect := image.Rect(y*cellSize, x*cellSize, y*cellSize+cellSize, x*cellSize+cellSize)
+			if withHeatmap {
+				distance := cell.contents
+				if distance > len(schemes.PBJ) {
+					distance = len(schemes.PBJ) - 2
+				}
+				draw.Draw(myimage, rect, &image.Uniform{schemes.PBJ[distance]}, image.ZP, draw.Src)
+			}
+			tileNumber := g.calculateTile(cell)
+			point := image.Point{tileNumber * cellSize, 0}
+			draw.Draw(myimage, rect, tiles, point, draw.Over)
+		}
+	}
+
 	if withPath {
-		red, err := os.Open("redline.png")
+		g.ClearDistances()
+		root := g.GetCell(0, 0)
+		dis := g.Distance(root)
+		g.AddDistances(dis)
+		farthest := g.GetFarthestCell(dis)
+		dis = g.Path(farthest)
+		g.ClearDistances()
+		g.AddDistances(dis)
+		red, err := os.Open("images/redline.png")
 		if err != nil {
 			fmt.Println("Could not open redline.")
 		}
-		line, err = png.Decode(red)
+		defer red.Close()
+		line, err := png.Decode(red)
 		if err != nil {
 			fmt.Println("Could not decode redline.")
 		}
-		defer red.Close()
-	}
 
-	for x, row := range(g.grid) {
-		for y, cell := range(row) {
-			rect := image.Rect(y * cellSize, x * cellSize, y * cellSize +  cellSize, x * cellSize + cellSize)
-			if withHeatmap {
-				distance := cell.contents
-				if distance > len(schemes.AlphaFire) {
-					distance = len(schemes.AlphaFire) - 2
-				}
-				draw.Draw(myimage, rect, &image.Uniform{schemes.AlphaFire[distance]}, image.ZP, draw.Src)
-			}
-			if withPath && cell.contents > 0 {
-				for _, link := range cell.links {
-					if g.GetCell(link.x, link.y).contents == 0 {
-						continue
+		for x, row := range g.grid {
+			for y, cell := range row {
+				rect := image.Rect(y*cellSize, x*cellSize, y*cellSize+cellSize, x*cellSize+cellSize)
+				if cell.contents > 0 {
+					for _, link := range cell.links {
+						if g.GetCell(link.x, link.y).contents == 0 {
+							continue
+						}
+						var x int
+						if link.x == cell.north.x && link.y == cell.north.y {
+							x = 0
+						}
+						if link.x == cell.east.x && link.y == cell.east.y {
+							x = 1 * cellSize
+						}
+						if link.x == cell.south.x && link.y == cell.south.y {
+							x = 2 * cellSize
+						}
+						if link.x == cell.west.x && link.y == cell.west.y {
+							x = 3 * cellSize
+						}
+						point := image.Point{x, 0}
+						draw.Draw(myimage, rect, line, point, draw.Over)
 					}
-					var x int
-					if link.x == cell.north.x && link.y == cell.north.y {
-						x = 0
-					}
-					if link.x == cell.east.x && link.y == cell.east.y {
-						x = 1 * cellSize
-					}
-					if link.x == cell.south.x && link.y == cell.south.y {
-						x = 2 * cellSize
-					}
-					if link.x == cell.west.x && link.y == cell.west.y {
-						x = 3 * cellSize
-					}
-					point := image.Point{x, 0}
-					draw.Draw(myimage, rect, line, point, draw.Over)
-
 				}
 			}
-			tileNumber := g.calculateTile(cell)
-			point := image.Point{tileNumber * 30, 0}
-			draw.Draw(myimage, rect, tiles, point, draw.Over)
 		}
 	}
 
